@@ -4,6 +4,7 @@
 typedef unsigned long u64;
 
 #define INIT_STACK_SIZE 0x1000
+/* 四个(cpu数量)4096大小的数组，似乎是用来当作栈大小 */
 char boot_cpu_stack[PLAT_CPU_NUMBER][INIT_STACK_SIZE] ALIGN(16);
 
 /*

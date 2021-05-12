@@ -55,6 +55,17 @@ enum flags {
 	PAD_RIGHT = 2
 };
 
+void reverse_copy(char *src, char *dest, size_t size)
+{
+  char *sbeg = src;
+  char *send = src + size;
+  while(send != sbeg){
+    *dest = *send;
+    dest++;
+    send--;
+  }
+}
+
 static int prints(char **out, const char *string, int width, int flags)
 {
 	int pc = 0, padchar = ' ';
@@ -119,6 +130,7 @@ static int printk_write_num(char **out, long long i, int base, int sign,
 	// store the digitals in the buffer `print_buf`:
 	// 1. the last postion of this buffer must be '\0'
 	// 2. the format is only decided by `base` and `letbase` here
+  /* 思路：存储u到printbuf中 */
 
 	if (neg) {
 		if (width && (flags & PAD_ZERO)) {
@@ -158,31 +170,35 @@ static int simple_vsprintf(char **out, const char *format, va_list ap)
 		if (*format == '%') {
 			++format;
 			width = flags = 0;
-			if (*format == '\0')
+			if (*format == '\0')/* 结束退出 */
 				break;
-			if (*format == '%')
+			if (*format == '%')/* 正常打印% */
 				goto out;
 			if (*format == '-') {
 				++format;
-				flags = PAD_RIGHT;
+				flags = PAD_RIGHT;/* 格式，向右对齐 */
 			}
 			while (*format == '0') {
 				++format;
-				flags |= PAD_ZERO;
+				flags |= PAD_ZERO;/* 格式? %0000 */
 			}
-			if (*format == '*') {
+			if (*format == '*') { /* 遇到了%*d 是用来设置宽度 */
 				width = va_arg(ap, int);
 				format++;
 			} else {
+        /* 设置宽度 %9d */
 				for (; *format >= '0' && *format <= '9';
 				     ++format) {
 					width *= 10;
 					width += *format - '0';
 				}
 			}
+      /* 原子解析 */
 			switch (*format) {
+      /* 将可变参数中取出一个int到u.i中 */
 			case ('d'):
 				u.i = va_arg(ap, int);
+        /* 然后调用 printk_write_num 将具体的值写到out中 */
 				pc +=
 				    printk_write_num(out, u.i, 10, 1, width,
 						     flags, 'a');
