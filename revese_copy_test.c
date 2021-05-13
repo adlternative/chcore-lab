@@ -11,10 +11,9 @@
 void reverse_copy(char *src, char *dest, size_t size) {
   char *sbeg = src;
   char *send = src + size;
+
   while (send != sbeg - 1) {
-    *dest = *send;
-    dest++;
-    send--;
+    *dest++ = *send--;
   }
 }
 

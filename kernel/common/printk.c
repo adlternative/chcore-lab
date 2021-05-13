@@ -40,6 +40,7 @@ typedef __builtin_va_list va_list;
 #define va_arg(v,l)     __builtin_va_arg(v,l)
 #define va_copy(d,s)    __builtin_va_copy(d,s)
 
+/* 将c输出到str或者stdout中 */
 static void simple_outputchar(char **str, char c)
 {
 	if (str) {
@@ -55,21 +56,20 @@ enum flags {
 	PAD_RIGHT = 2
 };
 
-void reverse_copy(char *src, char *dest, size_t size)
-{
+void reverse_copy(char *src, char *dest, size_t size) {
   char *sbeg = src;
   char *send = src + size;
-  while(send != sbeg){
-    *dest = *send;
-    dest++;
-    send--;
+
+  while (send != sbeg - 1) {
+    *dest++ = *send--;
   }
 }
 
+/* 似乎是正向输出string */
 static int prints(char **out, const char *string, int width, int flags)
 {
 	int pc = 0, padchar = ' ';
-
+  /* 宽度的处理 */
 	if (width > 0) {
 		int len = 0;
 		const char *ptr;
@@ -82,16 +82,19 @@ static int prints(char **out, const char *string, int width, int flags)
 		if (flags & PAD_ZERO)
 			padchar = '0';
 	}
+  /*  */
 	if (!(flags & PAD_RIGHT)) {
 		for (; width > 0; --width) {
 			simple_outputchar(out, padchar);
 			++pc;
 		}
 	}
+  /* 输出string */
 	for (; *string; ++string) {
 		simple_outputchar(out, *string);
 		++pc;
 	}
+  /* 输出padchar字符 */
 	for (; width > 0; --width) {
 		simple_outputchar(out, padchar);
 		++pc;
@@ -108,14 +111,28 @@ static int prints(char **out, const char *string, int width, int flags)
 // you may need to call `prints`
 // you do not need to print prefix like "0x", "0"...
 // Remember the most significant digit is printed first.
+char hexbigTable[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+char hexsmallTable[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                    '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+char decimalTable[10] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+char octonaryTable[8] = { '0', '1', '2', '3', '4', '5', '6', '7'};
+
+enum {
+  octonary = 8,
+  decimal = 10,
+  hex = 16
+};
+#define Tables(x) x ## Table
 static int printk_write_num(char **out, long long i, int base, int sign,
 			    int width, int flags, int letbase)
 {
 	char print_buf[PRINT_BUF_LEN];
 	char *s;
-	int t, neg = 0, pc = 0;
+	int neg = 0, pc = 0;
 	unsigned long long u = i;
-
+  // int n = 0, c = 0;
 	if (i == 0) {
 		print_buf[0] = '0';
 		print_buf[1] = '\0';
@@ -126,11 +143,29 @@ static int printk_write_num(char **out, long long i, int base, int sign,
 		neg = 1;
 		u = -i;
 	}
+
 	// TODO: fill your code here
 	// store the digitals in the buffer `print_buf`:
 	// 1. the last postion of this buffer must be '\0'
 	// 2. the format is only decided by `base` and `letbase` here
-  /* 思路：存储u到printbuf中 */
+  /* 思路：倒着输出 注意到是整数输出 u == |i|*/
+  // reverse_copy(&u,print_buf,8);
+  /* u = 123 */
+  s = print_buf + PRINT_BUF_LEN;
+  *--s='\0';
+  while (u) {
+    if(base == octonary)
+      *--s = Tables(octonary)[u % base];
+    if(base == decimal)
+      *--s = Tables(decimal)[u % base];
+    if(base == hex) {
+      if(letbase =='a')
+        *--s = Tables(hexsmall)[u % base];
+      if(letbase =='A')
+        *--s = Tables(hexbig)[u % base];
+    }
+    u /= base;
+  }
 
 	if (neg) {
 		if (width && (flags & PAD_ZERO)) {

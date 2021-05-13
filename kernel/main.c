@@ -40,6 +40,9 @@ void main(void *addr)
 
 	kinfo("Address of main() is 0x%lx\n", main);
 	kinfo("123456 decimal is 0%o octal\n", 123456);
+	kinfo("%d\n", 123456);//ok
+	kinfo("%o\n", 123);//ok
+	kinfo("%d\n", -123);//ok
 
 	stack_test(5);
 
