@@ -5,6 +5,7 @@ extern void init_boot_pt(void);
 
 extern void start_kernel(void *boot_flag);
 
+/* 在 */
 extern char _bss_start;
 extern char _bss_end;
 

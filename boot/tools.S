@@ -221,7 +221,7 @@ END_FUNC(invalidate_cache_all)
 #define MMU_TCR_IPS 			(0b101 << 32) /* 48-bit */
 #define MMU_TCR_AS				(1 << 36)
 
-
+/* 照函数名意应该是让mmu活跃起来 ，目前先不管吧！*/
 BEGIN_FUNC(el1_mmu_activate)
 	stp     x29, x30, [sp, #-16]!
 	mov     x29, sp
@@ -269,20 +269,32 @@ BEGIN_FUNC(el1_mmu_activate)
 	ret
 END_FUNC(el1_mmu_activate)
 
-
 /* These simple function is written by ChCorers */
+
+// void early_put32(unsigned long int addr, unsigned int ch);
+/* 写w1到 *x0（是一个地址）中 */
+/* 所以这里就是将ch写到以addr为地址的内存中 */
 BEGIN_FUNC(early_put32)
 	str w1, [x0]
 	ret
 END_FUNC(early_put32)
 
+// unsigned int early_get32(unsigned long int addr);
+/* 读以x0为地址的内存中4B到w0中并返回 */
 BEGIN_FUNC(early_get32)
 	ldr w0, [x0]
 	ret
 END_FUNC(early_get32)
 
+/* subs指令是ARM 指令集中的减法指令，
+与SUB 指令类似，需要注意的是，在SUBS 指令中，
+如果发生了借位操作，CPSR 寄存器中的
+C 标志位设置为 0 */
+
+/* 这里其实就是delay设置一个数字放在x0，
+然后x0递减到0 模拟指令级别的"延时" */
 BEGIN_FUNC(delay)
-	subs x0, x0, #1
+	subs x0, x0, #1 //x0=x0-1
 	bne delay
 	ret
 END_FUNC(delay)

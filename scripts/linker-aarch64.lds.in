@@ -2,36 +2,49 @@
 
 SECTIONS
 {
+    //TEXT_OFFSET = 0x80000
     . = TEXT_OFFSET;
+    //img的开始  init 0000000000080000
     img_start = .;
     init : {
         ${init_object}
     }
 
-    . = ALIGN(SZ_16K);
+    . = ALIGN(SZ_16K); //段大小16KB=0x4000 B
 
     init_end = ABSOLUTE(.);
 
+    //代码段 这似乎是内核的虚拟地址 KERNEL_VADDR = 0xffffff0000000000
+    //虚拟地址VMA在 ffffff000008c000
+    //加载地址LMA在 000000000008c000
+    //为什么VMA,LMA不同见 ans.md
     .text KERNEL_VADDR + init_end : AT(init_end) {
         *(.text*)
     }
 
+    //数据段的开始
     . = ALIGN(SZ_64K);
     .data : {
         *(.data*)
     }
     . = ALIGN(SZ_64K);
 
+
+    //只读段的开始
     .rodata : {
         *(.rodata*)
     }
     _edata = . - KERNEL_VADDR;
+    //只读段的结束
 
+    //bss的开始
     _bss_start = . - KERNEL_VADDR;
     .bss : {
         *(.bss*)
     }
+    //bss的结束
     _bss_end = . - KERNEL_VADDR;
     . = ALIGN(SZ_64K);
+    //img的结束
     img_end = . - KERNEL_VADDR;
 }

@@ -20,9 +20,11 @@ BEGIN_FUNC(start_kernel)
      * set the TPIDR_EL1 to 0, which represent the logical
      * cpuid in the kernel 
      */
+    /* 翻译：只有mpidr的处理器能来到这里，
+    所以我们直接设置TPIDR_EL1为0,表示在内核中的逻辑cpuid*/
     mov     x3, #0
     msr     TPIDR_EL1, x3
-
+    /* 初始化内核栈 sp指向内核栈栈顶 */
     ldr     x2, =kernel_stack
     add     x2, x2, KERNEL_STACK_SIZE
     mov     sp, x2

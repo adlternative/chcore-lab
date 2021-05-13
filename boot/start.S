@@ -23,7 +23,7 @@ primary:
 	bl 	arm64_elX_to_el1
 	/* Prepare stack pointer and jump to C. */
 	adr 	x0, boot_cpu_stack /* 将 boot_cpu_stack 标号所在的地址写入x0 */
-	add 	x0, x0, #0x1000 /* x0+=4096 栈是高地址长到低地址，因此我们也先跨过去4086,达到最高地址 */
+	add 	x0, x0, #0x1000 /* 这是boot cpu用来初始化的栈 x0+=4096 栈是高地址长到低地址，因此我们跨过去4086,达到最高地址 */
 	mov 	sp, x0 /* 设置栈指针 */
 
 	bl 	init_c /* 跳转init_c函数 */

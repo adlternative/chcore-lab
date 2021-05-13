@@ -17,6 +17,7 @@
 #include <common/types.h>
 
 static inline __attribute__ ((always_inline))
+/* 读取栈帧 */
 u64 read_fp()
 {
 	u64 fp;
@@ -24,12 +25,36 @@ u64 read_fp()
 	return fp;
 }
 
+/* lab1用来跟踪栈帧的 */
 __attribute__ ((optimize("O1")))
 int stack_backtrace()
 {
-	printk("Stack backtrace:\n");
+/*
+32字节
+{
+oldFp;//8
+lr;//8
+arg;//8
+}fp
+ */
+  /* fp上会存储 oldFp, lr, arg */
+  typedef struct Fp {
+    struct Fp *oldFp;
+    u64 lr;
+    u64 arg;
+  } Fp;
 
-	// Your code here.
-
+  printk("Stack backtrace:\n");
+  /* 获得 stack_backtrace 栈底fp（高地址）*/
+  Fp *fp = (Fp *)read_fp();
+  /* 打印上一层的栈寄存器和参数 */
+  while (fp->oldFp) {
+    /* 保存在栈中的已经是上一层的内容了 */
+    /* 不过这里我们需要的lr得是上一层栈帧的lr的所以... */
+    /* 注意到这一层栈会保存上一层的x19，然后本层的x19=参数x0,
+    所以我们只用本层fp->arg就可以知道上一层的参数（科科，这是定理么） */
+    printk("LR %lx FP %lx Args %lx\n", fp->oldFp->lr, fp->oldFp, fp->arg);
+    fp = (Fp *)fp->oldFp;
+  }
 	return 0;
 }
